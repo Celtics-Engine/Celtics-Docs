@@ -43,15 +43,15 @@ The Backend will be a api for storing files asset files on a server for use by o
 
 #### Asset Table
 - asin - asset id
-- userid - asin of the user who created the asset `(maybe multable)`
-- name - Name of the asset
+- userid - asin of the user who created the asset `(maybe multable)` <-
+- name - Name of the asset <-
 - asset_location - Link to where asset files are stored on S3 for download
 - discription - Discription of the asset
 - images - Set of image links for files stored on S3
 - asset_size - Size of files uploaded so S3 calculated at upload
-- downloads - Number of times the asset has been downloaded
-- compatable_engine_ver - Set of engine versions that work with asset
-- date_posted - Date that the content was uploaded
+- downloads - Number of times the asset has been downloaded <-
+- compatable_engine_ver - Set of engine versions that work with asset <-
+- date_posted - Date that the content was uploaded <-
 
 
 ```yaml

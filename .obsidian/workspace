@@ -1,0 +1,103 @@
+{
+  "main": {
+    "id": "2cf474402ab0ec2f",
+    "type": "split",
+    "children": [
+      {
+        "id": "fa8f2a532819fb53",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "Project Docs/Game Engine/Backend.md",
+            "mode": "source",
+            "source": false
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "32cbb5b70ad0e615",
+    "type": "split",
+    "children": [
+      {
+        "id": "d47912ec866fab6e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ff18f1c35b8d57d8",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "bbb201cbaf5f9173",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "a2ba52fda0d0a23e",
+    "type": "split",
+    "children": [
+      {
+        "id": "e0677332867146b4",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "deab5d5d3db94856",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Project Docs/Game Engine/Backend.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "active": "fa8f2a532819fb53",
+  "lastOpenFiles": [
+    "Project Docs/Game Engine/Backend.md",
+    "Project Docs/Game Engine/Frontend.md",
+    "Project Docs/Design Documents/Accomplishment tracking template.md",
+    "Project Docs/Design Documents/Construction Materials App DD.md",
+    "Project Docs/Design Documents/Example Design Document.md",
+    "Project Docs/Design Documents/Integration Test Plan.md",
+    "Project Docs/Design Documents/Music Generator.md",
+    "Project Docs/Design Documents/Project Ideas.md",
+    "Project Docs/Design Documents/Reflection.md",
+    "Project Docs/Design Documents/Rubric.md"
+  ]
+}
