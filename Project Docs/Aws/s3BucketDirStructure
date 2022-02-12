@@ -1,0 +1,10 @@
+bucket folder structure 
+
+[userId] 
+|
+|---[assetId]  
+|    |
+|    |---[json file] 
+|        |
+|        |---[zipped assest]
+            
