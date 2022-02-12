@@ -7,4 +7,6 @@ bucket folder structure
 |    |---[json file] 
 |        |
 |        |---[zipped assest]
+
+https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-folders.html#create-folder
             
