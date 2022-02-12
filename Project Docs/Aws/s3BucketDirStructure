@@ -1,12 +1,12 @@
 bucket folder structure 
 
-[userId] 
+[user] 
 |
-|---[assetId]  
-|    |
-|    |---[json file] 
-|        |
-|        |---[zipped assest]
+|--[asset]  
+| 
+|----[metadata] (json file)
+|        
+|------[zip]    (compressed asset data)
 
 https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-folders.html#create-folder
             
