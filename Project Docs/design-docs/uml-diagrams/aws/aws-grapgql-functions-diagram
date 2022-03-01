@@ -1,0 +1,2944 @@
+{
+    "Parameters": {
+        "DynamoDBModelTableReadIOPS": {
+            "Type": "Number",
+            "Default": 5,
+            "Description": "The number of read IOPS the table should support."
+        },
+        "DynamoDBModelTableWriteIOPS": {
+            "Type": "Number",
+            "Default": 5,
+            "Description": "The number of write IOPS the table should support."
+        },
+        "DynamoDBBillingMode": {
+            "Type": "String",
+            "Default": "PAY_PER_REQUEST",
+            "AllowedValues": [
+                "PAY_PER_REQUEST",
+                "PROVISIONED"
+            ],
+            "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+        },
+        "DynamoDBEnablePointInTimeRecovery": {
+            "Type": "String",
+            "Default": "false",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Description": "Whether to enable Point in Time Recovery on the table."
+        },
+        "DynamoDBEnableServerSideEncryption": {
+            "Type": "String",
+            "Default": "true",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Description": "Enable server side encryption powered by KMS."
+        },
+        "referencetotransformerrootstackenv10C5A902Ref": {
+            "Type": "String"
+        },
+        "referencetotransformerrootstackGraphQLAPI20497F53ApiId": {
+            "Type": "String"
+        },
+        "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name": {
+            "Type": "String"
+        },
+        "referencetotransformerrootstackS3DeploymentBucket7592718ARef": {
+            "Type": "String"
+        },
+        "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref": {
+            "Type": "String"
+        },
+        "referencetotransformerrootstackauthRoleNameFB872D50Ref": {
+            "Type": "String"
+        },
+        "referencetotransformerrootstackunauthRoleName49F3C1FERef": {
+            "Type": "String"
+        }
+    },
+    "Conditions": {
+        "HasEnvironmentParameter": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+                        },
+                        "NONE"
+                    ]
+                }
+            ]
+        },
+        "ShouldUseServerSideEncryption": {
+            "Fn::Equals": [
+                {
+                    "Ref": "DynamoDBEnableServerSideEncryption"
+                },
+                "true"
+            ]
+        },
+        "ShouldUsePayPerRequestBilling": {
+            "Fn::Equals": [
+                {
+                    "Ref": "DynamoDBBillingMode"
+                },
+                "PAY_PER_REQUEST"
+            ]
+        },
+        "ShouldUsePointInTimeRecovery": {
+            "Fn::Equals": [
+                {
+                    "Ref": "DynamoDBEnablePointInTimeRecovery"
+                },
+                "true"
+            ]
+        }
+    },
+    "Resources": {
+        "AssetsTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "KeySchema": [
+                    {
+                        "AttributeName": "id",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "id",
+                        "AttributeType": "S"
+                    }
+                ],
+                "BillingMode": {
+                    "Fn::If": [
+                        "ShouldUsePayPerRequestBilling",
+                        "PAY_PER_REQUEST",
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "PointInTimeRecoverySpecification": {
+                    "Fn::If": [
+                        "ShouldUsePointInTimeRecovery",
+                        {
+                            "PointInTimeRecoveryEnabled": true
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "ProvisionedThroughput": {
+                    "Fn::If": [
+                        "ShouldUsePayPerRequestBilling",
+                        {
+                            "Ref": "AWS::NoValue"
+                        },
+                        {
+                            "ReadCapacityUnits": {
+                                "Ref": "DynamoDBModelTableReadIOPS"
+                            },
+                            "WriteCapacityUnits": {
+                                "Ref": "DynamoDBModelTableWriteIOPS"
+                            }
+                        }
+                    ]
+                },
+                "SSESpecification": {
+                    "SSEEnabled": {
+                        "Fn::If": [
+                            "ShouldUseServerSideEncryption",
+                            true,
+                            false
+                        ]
+                    }
+                },
+                "StreamSpecification": {
+                    "StreamViewType": "NEW_AND_OLD_IMAGES"
+                },
+                "TableName": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "Assets-",
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "-",
+                            {
+                                "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+                            }
+                        ]
+                    ]
+                },
+                "TimeToLiveSpecification": {
+                    "AttributeName": "_ttl",
+                    "Enabled": true
+                }
+            },
+            "UpdateReplacePolicy": "Delete",
+            "DeletionPolicy": "Delete",
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "3cbbb341-32fe-486d-993a-779f240433a6"
+                }
+            }
+        },
+        "AssetsIAMRoleDECB1287": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "appsync.amazonaws.com"
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "RoleName": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "AssetsIAMRoleae1669-",
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "-",
+                            {
+                                "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+                            }
+                        ]
+                    ]
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "a251e8e3-16af-492e-9286-81b576fb31d2"
+                }
+            }
+        },
+        "AssetsIAMRoleDefaultPolicy3F3E7D97": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "dynamodb:BatchGetItem",
+                                "dynamodb:GetRecords",
+                                "dynamodb:GetShardIterator",
+                                "dynamodb:Query",
+                                "dynamodb:GetItem",
+                                "dynamodb:Scan",
+                                "dynamodb:ConditionCheckItem",
+                                "dynamodb:BatchWriteItem",
+                                "dynamodb:PutItem",
+                                "dynamodb:UpdateItem",
+                                "dynamodb:DeleteItem"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                {
+                                    "Fn::GetAtt": [
+                                        "AssetsTable",
+                                        "Arn"
+                                    ]
+                                },
+                                {
+                                    "Ref": "AWS::NoValue"
+                                }
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "AssetsIAMRoleDefaultPolicy3F3E7D97",
+                "Roles": [
+                    {
+                        "Ref": "AssetsIAMRoleDECB1287"
+                    }
+                ]
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "80e56fb1-5418-4fcf-a4c2-a3bd85ec6ac1"
+                }
+            }
+        },
+        "DynamoDBAccess71ABE5AE": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "dynamodb:BatchGetItem",
+                                "dynamodb:BatchWriteItem",
+                                "dynamodb:PutItem",
+                                "dynamodb:DeleteItem",
+                                "dynamodb:GetItem",
+                                "dynamodb:Scan",
+                                "dynamodb:Query",
+                                "dynamodb:UpdateItem"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                {
+                                    "Fn::Sub": [
+                                        "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+                                        {
+                                            "tablename": {
+                                                "Fn::Join": [
+                                                    "",
+                                                    [
+                                                        "Assets-",
+                                                        {
+                                                            "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                                                        },
+                                                        "-",
+                                                        {
+                                                            "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+                                                        }
+                                                    ]
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Fn::Sub": [
+                                        "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+                                        {
+                                            "tablename": {
+                                                "Fn::Join": [
+                                                    "",
+                                                    [
+                                                        "Assets-",
+                                                        {
+                                                            "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                                                        },
+                                                        "-",
+                                                        {
+                                                            "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+                                                        }
+                                                    ]
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Fn::Sub": [
+                                        "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+                                        {
+                                            "tablename": {
+                                                "Fn::Join": [
+                                                    "",
+                                                    [
+                                                        "AmplifyDataStore-",
+                                                        {
+                                                            "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                                                        },
+                                                        "-",
+                                                        {
+                                                            "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+                                                        }
+                                                    ]
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Fn::Sub": [
+                                        "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+                                        {
+                                            "tablename": {
+                                                "Fn::Join": [
+                                                    "",
+                                                    [
+                                                        "AmplifyDataStore-",
+                                                        {
+                                                            "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                                                        },
+                                                        "-",
+                                                        {
+                                                            "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+                                                        }
+                                                    ]
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "DynamoDBAccess71ABE5AE",
+                "Roles": [
+                    {
+                        "Ref": "AssetsIAMRoleDECB1287"
+                    }
+                ]
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "03759dec-42f1-4957-ac81-1375bb5aea2d"
+                }
+            }
+        },
+        "AssetsDataSource": {
+            "Type": "AWS::AppSync::DataSource",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "Name": "AssetsTable",
+                "Type": "AMAZON_DYNAMODB",
+                "DynamoDBConfig": {
+                    "AwsRegion": {
+                        "Ref": "AWS::Region"
+                    },
+                    "DeltaSyncConfig": {
+                        "BaseTableTTL": "43200",
+                        "DeltaSyncTableName": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "AmplifyDataStore-",
+                                    {
+                                        "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                                    },
+                                    "-",
+                                    {
+                                        "Ref": "referencetotransformerrootstackenv10C5A902Ref"
+                                    }
+                                ]
+                            ]
+                        },
+                        "DeltaSyncTableTTL": "30"
+                    },
+                    "TableName": {
+                        "Ref": "AssetsTable"
+                    },
+                    "Versioned": true
+                },
+                "ServiceRoleArn": {
+                    "Fn::GetAtt": [
+                        "AssetsIAMRoleDECB1287",
+                        "Arn"
+                    ]
+                }
+            },
+            "DependsOn": [
+                "AssetsIAMRoleDECB1287"
+            ],
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "2af80c22-4e2b-4375-8962-03d9b94d1fd4"
+                }
+            }
+        },
+        "QuerygetAssetsauth0FunctionQuerygetAssetsauth0FunctionAppSyncFunction4B977BBC": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "QuerygetAssetsauth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.getAssets.auth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "b99ebaad-d009-42b7-9491-13f7f147842f"
+                }
+            }
+        },
+        "QuerygetAssetspostAuth0FunctionQuerygetAssetspostAuth0FunctionAppSyncFunction239E0B7D": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "QuerygetAssetspostAuth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.getAssets.postAuth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "1bc1394d-4608-4df8-81cb-3b6cbdd4c42f"
+                }
+            }
+        },
+        "QueryGetAssetsDataResolverFnQueryGetAssetsDataResolverFnAppSyncFunction7D785FE0": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Fn::GetAtt": [
+                        "AssetsDataSource",
+                        "Name"
+                    ]
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "QueryGetAssetsDataResolverFn",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.getAssets.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.getAssets.res.vtl"
+                        ]
+                    ]
+                },
+                "SyncConfig": {
+                    "ConflictDetection": "VERSION",
+                    "ConflictHandler": "AUTOMERGE"
+                }
+            },
+            "DependsOn": [
+                "AssetsDataSource"
+            ],
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "17ac4493-f062-46eb-8124-769f9c5dd526"
+                }
+            }
+        },
+        "GetAssetsResolver": {
+            "Type": "AWS::AppSync::Resolver",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "FieldName": "getAssets",
+                "TypeName": "Query",
+                "Kind": "PIPELINE",
+                "PipelineConfig": {
+                    "Functions": [
+                        {
+                            "Fn::GetAtt": [
+                                "QuerygetAssetsauth0FunctionQuerygetAssetsauth0FunctionAppSyncFunction4B977BBC",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "QuerygetAssetspostAuth0FunctionQuerygetAssetspostAuth0FunctionAppSyncFunction239E0B7D",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "QueryGetAssetsDataResolverFnQueryGetAssetsDataResolverFnAppSyncFunction7D785FE0",
+                                "FunctionId"
+                            ]
+                        }
+                    ]
+                },
+                "RequestMappingTemplate": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"getAssets\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+                            {
+                                "Ref": "AssetsTable"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackauthRoleNameFB872D50Ref"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackunauthRoleName49F3C1FERef"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.toJson({})"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "28a66f4e-ed18-492d-9d4d-29be3f5e9551"
+                }
+            }
+        },
+        "QuerylistAssetsauth0FunctionQuerylistAssetsauth0FunctionAppSyncFunctionF8B57D37": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "QuerylistAssetsauth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.listAssets.auth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "b03484d0-c50f-4a37-a929-bd73dc98f704"
+                }
+            }
+        },
+        "QuerylistAssetspostAuth0FunctionQuerylistAssetspostAuth0FunctionAppSyncFunction96808E7D": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "QuerylistAssetspostAuth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.listAssets.postAuth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "43f2c9c8-eaaa-4c75-ab6b-e20d7ab46968"
+                }
+            }
+        },
+        "QueryListAssetsDataResolverFnQueryListAssetsDataResolverFnAppSyncFunction43D1C805": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Fn::GetAtt": [
+                        "AssetsDataSource",
+                        "Name"
+                    ]
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "QueryListAssetsDataResolverFn",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.listAssets.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.listAssets.res.vtl"
+                        ]
+                    ]
+                },
+                "SyncConfig": {
+                    "ConflictDetection": "VERSION",
+                    "ConflictHandler": "AUTOMERGE"
+                }
+            },
+            "DependsOn": [
+                "AssetsDataSource"
+            ],
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "a7f14a1c-0f42-4b13-b775-5279c7841fa4"
+                }
+            }
+        },
+        "ListAssetsResolver": {
+            "Type": "AWS::AppSync::Resolver",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "FieldName": "listAssets",
+                "TypeName": "Query",
+                "Kind": "PIPELINE",
+                "PipelineConfig": {
+                    "Functions": [
+                        {
+                            "Fn::GetAtt": [
+                                "QuerylistAssetsauth0FunctionQuerylistAssetsauth0FunctionAppSyncFunctionF8B57D37",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "QuerylistAssetspostAuth0FunctionQuerylistAssetspostAuth0FunctionAppSyncFunction96808E7D",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "QueryListAssetsDataResolverFnQueryListAssetsDataResolverFnAppSyncFunction43D1C805",
+                                "FunctionId"
+                            ]
+                        }
+                    ]
+                },
+                "RequestMappingTemplate": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listAssets\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+                            {
+                                "Ref": "AssetsTable"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackauthRoleNameFB872D50Ref"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackunauthRoleName49F3C1FERef"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.toJson({})"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "0b020b4d-5b34-4847-8e70-a25ecda9fa27"
+                }
+            }
+        },
+        "QuerysyncAssetsauth0FunctionQuerysyncAssetsauth0FunctionAppSyncFunctionBDB3BDA9": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "QuerysyncAssetsauth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.syncAssets.auth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "202c58ba-dfb8-45ac-8d19-8a4ea87d1001"
+                }
+            }
+        },
+        "QuerysyncAssetspostAuth0FunctionQuerysyncAssetspostAuth0FunctionAppSyncFunction5234A63F": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "QuerysyncAssetspostAuth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.syncAssets.postAuth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "21548e12-7823-4041-bcd8-d1703618a88c"
+                }
+            }
+        },
+        "QuerySyncAssetsDataResolverFnQuerySyncAssetsDataResolverFnAppSyncFunction7781D700": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Fn::GetAtt": [
+                        "AssetsDataSource",
+                        "Name"
+                    ]
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "QuerySyncAssetsDataResolverFn",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.syncAssets.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Query.syncAssets.res.vtl"
+                        ]
+                    ]
+                },
+                "SyncConfig": {
+                    "ConflictDetection": "VERSION",
+                    "ConflictHandler": "AUTOMERGE"
+                }
+            },
+            "DependsOn": [
+                "AssetsDataSource"
+            ],
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "fca04947-84db-4c2c-a8dc-4ab37de6111f"
+                }
+            }
+        },
+        "SyncAssetsResolver": {
+            "Type": "AWS::AppSync::Resolver",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "FieldName": "syncAssets",
+                "TypeName": "Query",
+                "Kind": "PIPELINE",
+                "PipelineConfig": {
+                    "Functions": [
+                        {
+                            "Fn::GetAtt": [
+                                "QuerysyncAssetsauth0FunctionQuerysyncAssetsauth0FunctionAppSyncFunctionBDB3BDA9",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "QuerysyncAssetspostAuth0FunctionQuerysyncAssetspostAuth0FunctionAppSyncFunction5234A63F",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "QuerySyncAssetsDataResolverFnQuerySyncAssetsDataResolverFnAppSyncFunction7781D700",
+                                "FunctionId"
+                            ]
+                        }
+                    ]
+                },
+                "RequestMappingTemplate": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"syncAssets\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+                            {
+                                "Ref": "AssetsTable"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackauthRoleNameFB872D50Ref"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackunauthRoleName49F3C1FERef"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.toJson({})"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "03eac8c0-cc5e-44ec-b230-686988ca4cdf"
+                }
+            }
+        },
+        "MutationcreateAssetsinit0FunctionMutationcreateAssetsinit0FunctionAppSyncFunction6E439881": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "MutationcreateAssetsinit0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.createAssets.init.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "062e3d30-8e06-4415-a357-b05a9ab777b6"
+                }
+            }
+        },
+        "MutationcreateAssetsauth0FunctionMutationcreateAssetsauth0FunctionAppSyncFunction2773D575": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "MutationcreateAssetsauth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.createAssets.auth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "efaac2b0-41ed-4be7-a684-78d3bf6e57f3"
+                }
+            }
+        },
+        "MutationcreateAssetspostAuth0FunctionMutationcreateAssetspostAuth0FunctionAppSyncFunctionB5B2CEEF": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "MutationcreateAssetspostAuth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.createAssets.postAuth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "82637b80-863e-40c9-b95f-8cf8e4069ebe"
+                }
+            }
+        },
+        "MutationCreateAssetsDataResolverFnMutationCreateAssetsDataResolverFnAppSyncFunctionAD9151D8": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Fn::GetAtt": [
+                        "AssetsDataSource",
+                        "Name"
+                    ]
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "MutationCreateAssetsDataResolverFn",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.createAssets.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.createAssets.res.vtl"
+                        ]
+                    ]
+                },
+                "SyncConfig": {
+                    "ConflictDetection": "VERSION",
+                    "ConflictHandler": "AUTOMERGE"
+                }
+            },
+            "DependsOn": [
+                "AssetsDataSource"
+            ],
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "c7948406-e9f7-4a89-adfe-fffd3f64274f"
+                }
+            }
+        },
+        "CreateAssetsResolver": {
+            "Type": "AWS::AppSync::Resolver",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "FieldName": "createAssets",
+                "TypeName": "Mutation",
+                "Kind": "PIPELINE",
+                "PipelineConfig": {
+                    "Functions": [
+                        {
+                            "Fn::GetAtt": [
+                                "MutationcreateAssetsinit0FunctionMutationcreateAssetsinit0FunctionAppSyncFunction6E439881",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "MutationcreateAssetsauth0FunctionMutationcreateAssetsauth0FunctionAppSyncFunction2773D575",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "MutationcreateAssetspostAuth0FunctionMutationcreateAssetspostAuth0FunctionAppSyncFunctionB5B2CEEF",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "MutationCreateAssetsDataResolverFnMutationCreateAssetsDataResolverFnAppSyncFunctionAD9151D8",
+                                "FunctionId"
+                            ]
+                        }
+                    ]
+                },
+                "RequestMappingTemplate": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"createAssets\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+                            {
+                                "Ref": "AssetsTable"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackauthRoleNameFB872D50Ref"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackunauthRoleName49F3C1FERef"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.toJson({})"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "ceab0bef-1191-4815-80ab-3b3ef7e227f7"
+                }
+            }
+        },
+        "MutationupdateAssetsinit0FunctionMutationupdateAssetsinit0FunctionAppSyncFunctionF00A8817": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "MutationupdateAssetsinit0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.updateAssets.init.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "70fa0ac6-2b24-4d84-9cc2-d9079cf7a8e6"
+                }
+            }
+        },
+        "MutationupdateAssetsauth0FunctionMutationupdateAssetsauth0FunctionAppSyncFunction74373B39": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Fn::GetAtt": [
+                        "AssetsDataSource",
+                        "Name"
+                    ]
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "MutationupdateAssetsauth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.updateAssets.auth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.updateAssets.auth.1.res.vtl"
+                        ]
+                    ]
+                }
+            },
+            "DependsOn": [
+                "AssetsDataSource"
+            ],
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "8acb9d30-1d36-4601-bc53-361be05f57f7"
+                }
+            }
+        },
+        "MutationupdateAssetspostAuth0FunctionMutationupdateAssetspostAuth0FunctionAppSyncFunctionA94F1E82": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "MutationupdateAssetspostAuth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.updateAssets.postAuth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "d7c68265-a857-4ba5-a98f-a95110b6a92a"
+                }
+            }
+        },
+        "MutationUpdateAssetsDataResolverFnMutationUpdateAssetsDataResolverFnAppSyncFunction707DCA34": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Fn::GetAtt": [
+                        "AssetsDataSource",
+                        "Name"
+                    ]
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "MutationUpdateAssetsDataResolverFn",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.updateAssets.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.updateAssets.res.vtl"
+                        ]
+                    ]
+                },
+                "SyncConfig": {
+                    "ConflictDetection": "VERSION",
+                    "ConflictHandler": "AUTOMERGE"
+                }
+            },
+            "DependsOn": [
+                "AssetsDataSource"
+            ],
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "2fd89fdc-9622-4d1e-b958-4e307d96cde5"
+                }
+            }
+        },
+        "UpdateAssetsResolver": {
+            "Type": "AWS::AppSync::Resolver",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "FieldName": "updateAssets",
+                "TypeName": "Mutation",
+                "Kind": "PIPELINE",
+                "PipelineConfig": {
+                    "Functions": [
+                        {
+                            "Fn::GetAtt": [
+                                "MutationupdateAssetsinit0FunctionMutationupdateAssetsinit0FunctionAppSyncFunctionF00A8817",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "MutationupdateAssetsauth0FunctionMutationupdateAssetsauth0FunctionAppSyncFunction74373B39",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "MutationupdateAssetspostAuth0FunctionMutationupdateAssetspostAuth0FunctionAppSyncFunctionA94F1E82",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "MutationUpdateAssetsDataResolverFnMutationUpdateAssetsDataResolverFnAppSyncFunction707DCA34",
+                                "FunctionId"
+                            ]
+                        }
+                    ]
+                },
+                "RequestMappingTemplate": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"updateAssets\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+                            {
+                                "Ref": "AssetsTable"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackauthRoleNameFB872D50Ref"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackunauthRoleName49F3C1FERef"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.toJson({})"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "3be4cc0f-1da5-4760-b461-9a4e8b1ce7e6"
+                }
+            }
+        },
+        "MutationdeleteAssetsauth0FunctionMutationdeleteAssetsauth0FunctionAppSyncFunction81168933": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Fn::GetAtt": [
+                        "AssetsDataSource",
+                        "Name"
+                    ]
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "MutationdeleteAssetsauth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.deleteAssets.auth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.deleteAssets.auth.1.res.vtl"
+                        ]
+                    ]
+                }
+            },
+            "DependsOn": [
+                "AssetsDataSource"
+            ],
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "6ff3b162-41d8-4f56-9171-126b99900c69"
+                }
+            }
+        },
+        "MutationdeleteAssetspostAuth0FunctionMutationdeleteAssetspostAuth0FunctionAppSyncFunctionB67ED8A4": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "MutationdeleteAssetspostAuth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.deleteAssets.postAuth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "e65bb830-096a-41bd-9fdf-d21302c107cb"
+                }
+            }
+        },
+        "MutationDeleteAssetsDataResolverFnMutationDeleteAssetsDataResolverFnAppSyncFunctionD282353E": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Fn::GetAtt": [
+                        "AssetsDataSource",
+                        "Name"
+                    ]
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "MutationDeleteAssetsDataResolverFn",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.deleteAssets.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Mutation.deleteAssets.res.vtl"
+                        ]
+                    ]
+                },
+                "SyncConfig": {
+                    "ConflictDetection": "VERSION",
+                    "ConflictHandler": "AUTOMERGE"
+                }
+            },
+            "DependsOn": [
+                "AssetsDataSource"
+            ],
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "e11c8906-0ecc-4d4a-81da-cee28fd6f3a1"
+                }
+            }
+        },
+        "DeleteAssetsResolver": {
+            "Type": "AWS::AppSync::Resolver",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "FieldName": "deleteAssets",
+                "TypeName": "Mutation",
+                "Kind": "PIPELINE",
+                "PipelineConfig": {
+                    "Functions": [
+                        {
+                            "Fn::GetAtt": [
+                                "MutationdeleteAssetsauth0FunctionMutationdeleteAssetsauth0FunctionAppSyncFunction81168933",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "MutationdeleteAssetspostAuth0FunctionMutationdeleteAssetspostAuth0FunctionAppSyncFunctionB67ED8A4",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "MutationDeleteAssetsDataResolverFnMutationDeleteAssetsDataResolverFnAppSyncFunctionD282353E",
+                                "FunctionId"
+                            ]
+                        }
+                    ]
+                },
+                "RequestMappingTemplate": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"deleteAssets\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+                            {
+                                "Ref": "AssetsTable"
+                            },
+                            "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackauthRoleNameFB872D50Ref"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackunauthRoleName49F3C1FERef"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.toJson({})"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "87aacb34-bd90-49e6-aa4a-74217b5c660c"
+                }
+            }
+        },
+        "SubscriptiononCreateAssetsauth0FunctionSubscriptiononCreateAssetsauth0FunctionAppSyncFunctionD7FF01B8": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "SubscriptiononCreateAssetsauth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onCreateAssets.auth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "e6501001-fcd7-403d-8c47-0e2402b7d661"
+                }
+            }
+        },
+        "SubscriptiononCreateAssetspostAuth0FunctionSubscriptiononCreateAssetspostAuth0FunctionAppSyncFunctionFFB31538": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "SubscriptiononCreateAssetspostAuth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onCreateAssets.postAuth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "d25b94fa-f215-4bab-855a-cd73ee8f3170"
+                }
+            }
+        },
+        "SubscriptionOnCreateAssetsDataResolverFnSubscriptionOnCreateAssetsDataResolverFnAppSyncFunction3AE2D768": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "SubscriptionOnCreateAssetsDataResolverFn",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onCreateAssets.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onCreateAssets.res.vtl"
+                        ]
+                    ]
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "b94be4c3-afb3-4c52-92ee-045d154b2cef"
+                }
+            }
+        },
+        "SubscriptiononCreateAssetsResolver": {
+            "Type": "AWS::AppSync::Resolver",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "FieldName": "onCreateAssets",
+                "TypeName": "Subscription",
+                "Kind": "PIPELINE",
+                "PipelineConfig": {
+                    "Functions": [
+                        {
+                            "Fn::GetAtt": [
+                                "SubscriptiononCreateAssetsauth0FunctionSubscriptiononCreateAssetsauth0FunctionAppSyncFunctionD7FF01B8",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "SubscriptiononCreateAssetspostAuth0FunctionSubscriptiononCreateAssetspostAuth0FunctionAppSyncFunctionFFB31538",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "SubscriptionOnCreateAssetsDataResolverFnSubscriptionOnCreateAssetsDataResolverFnAppSyncFunction3AE2D768",
+                                "FunctionId"
+                            ]
+                        }
+                    ]
+                },
+                "RequestMappingTemplate": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onCreateAssets\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "\"))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackauthRoleNameFB872D50Ref"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackunauthRoleName49F3C1FERef"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.toJson({})"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "5c6e5ac7-7459-490d-b8bc-80f8f75c1b7b"
+                }
+            }
+        },
+        "SubscriptiononUpdateAssetsauth0FunctionSubscriptiononUpdateAssetsauth0FunctionAppSyncFunction3394E04F": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "SubscriptiononUpdateAssetsauth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onUpdateAssets.auth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "9112d2d2-65a9-49e5-833c-1f4eea3b8204"
+                }
+            }
+        },
+        "SubscriptiononUpdateAssetspostAuth0FunctionSubscriptiononUpdateAssetspostAuth0FunctionAppSyncFunction5E3329B0": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "SubscriptiononUpdateAssetspostAuth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onUpdateAssets.postAuth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "acb76f17-1169-4ae0-bf2d-68be7b9c7dab"
+                }
+            }
+        },
+        "SubscriptionOnUpdateAssetsDataResolverFnSubscriptionOnUpdateAssetsDataResolverFnAppSyncFunctionC7C7E710": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "SubscriptionOnUpdateAssetsDataResolverFn",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onUpdateAssets.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onUpdateAssets.res.vtl"
+                        ]
+                    ]
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "4e007bcd-4497-41ff-9b7a-8f4c0c1af8bf"
+                }
+            }
+        },
+        "SubscriptiononUpdateAssetsResolver": {
+            "Type": "AWS::AppSync::Resolver",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "FieldName": "onUpdateAssets",
+                "TypeName": "Subscription",
+                "Kind": "PIPELINE",
+                "PipelineConfig": {
+                    "Functions": [
+                        {
+                            "Fn::GetAtt": [
+                                "SubscriptiononUpdateAssetsauth0FunctionSubscriptiononUpdateAssetsauth0FunctionAppSyncFunction3394E04F",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "SubscriptiononUpdateAssetspostAuth0FunctionSubscriptiononUpdateAssetspostAuth0FunctionAppSyncFunction5E3329B0",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "SubscriptionOnUpdateAssetsDataResolverFnSubscriptionOnUpdateAssetsDataResolverFnAppSyncFunctionC7C7E710",
+                                "FunctionId"
+                            ]
+                        }
+                    ]
+                },
+                "RequestMappingTemplate": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onUpdateAssets\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "\"))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackauthRoleNameFB872D50Ref"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackunauthRoleName49F3C1FERef"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.toJson({})"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "f000ac27-c76d-4c9c-9c31-cfe4e61bcceb"
+                }
+            }
+        },
+        "SubscriptiononDeleteAssetsauth0FunctionSubscriptiononDeleteAssetsauth0FunctionAppSyncFunction630A722B": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "SubscriptiononDeleteAssetsauth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onDeleteAssets.auth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "e31ecb6b-54d5-4b36-a69d-e78a10513f51"
+                }
+            }
+        },
+        "SubscriptiononDeleteAssetspostAuth0FunctionSubscriptiononDeleteAssetspostAuth0FunctionAppSyncFunctionC74C9A1C": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "SubscriptiononDeleteAssetspostAuth0Function",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onDeleteAssets.postAuth.1.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson({})"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "fc6a4a19-9c5e-405e-80c8-44f28e1d8c93"
+                }
+            }
+        },
+        "SubscriptionOnDeleteAssetsDataResolverFnSubscriptionOnDeleteAssetsDataResolverFnAppSyncFunction3F2A1474": {
+            "Type": "AWS::AppSync::FunctionConfiguration",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "DataSourceName": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+                },
+                "FunctionVersion": "2018-05-29",
+                "Name": "SubscriptionOnDeleteAssetsDataResolverFn",
+                "RequestMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onDeleteAssets.req.vtl"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplateS3Location": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3://",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+                            },
+                            "/",
+                            {
+                                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+                            },
+                            "/resolvers/Subscription.onDeleteAssets.res.vtl"
+                        ]
+                    ]
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "c28e72fa-d273-4c09-b8e9-388d051115af"
+                }
+            }
+        },
+        "SubscriptiononDeleteAssetsResolver": {
+            "Type": "AWS::AppSync::Resolver",
+            "Properties": {
+                "ApiId": {
+                    "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                },
+                "FieldName": "onDeleteAssets",
+                "TypeName": "Subscription",
+                "Kind": "PIPELINE",
+                "PipelineConfig": {
+                    "Functions": [
+                        {
+                            "Fn::GetAtt": [
+                                "SubscriptiononDeleteAssetsauth0FunctionSubscriptiononDeleteAssetsauth0FunctionAppSyncFunction630A722B",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "SubscriptiononDeleteAssetspostAuth0FunctionSubscriptiononDeleteAssetspostAuth0FunctionAppSyncFunctionC74C9A1C",
+                                "FunctionId"
+                            ]
+                        },
+                        {
+                            "Fn::GetAtt": [
+                                "SubscriptionOnDeleteAssetsDataResolverFnSubscriptionOnDeleteAssetsDataResolverFnAppSyncFunction3F2A1474",
+                                "FunctionId"
+                            ]
+                        }
+                    ]
+                },
+                "RequestMappingTemplate": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onDeleteAssets\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "\"))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackauthRoleNameFB872D50Ref"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:aws:sts::",
+                            {
+                                "Ref": "AWS::AccountId"
+                            },
+                            ":assumed-role/",
+                            {
+                                "Ref": "referencetotransformerrootstackunauthRoleName49F3C1FERef"
+                            },
+                            "/CognitoIdentityCredentials\"))\n$util.toJson({})"
+                        ]
+                    ]
+                },
+                "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "c3d4c4ca-6a74-4f34-a36c-29643af38d89"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "GetAttAssetsTableStreamArn": {
+            "Description": "Your DynamoDB table StreamArn.",
+            "Value": {
+                "Fn::GetAtt": [
+                    "AssetsTable",
+                    "StreamArn"
+                ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "GetAtt:AssetsTable:StreamArn"
+                        ]
+                    ]
+                }
+            }
+        },
+        "GetAttAssetsTableName": {
+            "Description": "Your DynamoDB table name.",
+            "Value": {
+                "Ref": "AssetsTable"
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "GetAtt:AssetsTable:Name"
+                        ]
+                    ]
+                }
+            }
+        },
+        "GetAttAssetsDataSourceName": {
+            "Description": "Your model DataSource name.",
+            "Value": {
+                "Fn::GetAtt": [
+                    "AssetsDataSource",
+                    "Name"
+                ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        ":",
+                        [
+                            {
+                                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+                            },
+                            "GetAtt:AssetsDataSource:Name"
+                        ]
+                    ]
+                }
+            }
+        },
+        "transformerrootstackAssetsAssetsTable35A6C3CBStreamArn": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "AssetsTable",
+                    "StreamArn"
+                ]
+            }
+        }
+    },
+    "Metadata": {
+        "AWS::CloudFormation::Designer": {
+            "c28e72fa-d273-4c09-b8e9-388d051115af": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 60,
+                    "y": 90
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "fc6a4a19-9c5e-405e-80c8-44f28e1d8c93": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 180,
+                    "y": 90
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "e31ecb6b-54d5-4b36-a69d-e78a10513f51": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 60,
+                    "y": 210
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "c3d4c4ca-6a74-4f34-a36c-29643af38d89": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 180,
+                    "y": 210
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "4e007bcd-4497-41ff-9b7a-8f4c0c1af8bf": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 300,
+                    "y": 90
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "acb76f17-1169-4ae0-bf2d-68be7b9c7dab": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 300,
+                    "y": 210
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "9112d2d2-65a9-49e5-833c-1f4eea3b8204": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 60,
+                    "y": 330
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "f000ac27-c76d-4c9c-9c31-cfe4e61bcceb": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 180,
+                    "y": 330
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "b94be4c3-afb3-4c52-92ee-045d154b2cef": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 300,
+                    "y": 330
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "d25b94fa-f215-4bab-855a-cd73ee8f3170": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 420,
+                    "y": 90
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "e6501001-fcd7-403d-8c47-0e2402b7d661": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 420,
+                    "y": 210
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "5c6e5ac7-7459-490d-b8bc-80f8f75c1b7b": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 420,
+                    "y": 330
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "e65bb830-096a-41bd-9fdf-d21302c107cb": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 60,
+                    "y": 450
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "d7c68265-a857-4ba5-a98f-a95110b6a92a": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 180,
+                    "y": 450
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "70fa0ac6-2b24-4d84-9cc2-d9079cf7a8e6": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 300,
+                    "y": 450
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "82637b80-863e-40c9-b95f-8cf8e4069ebe": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 420,
+                    "y": 450
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "efaac2b0-41ed-4be7-a684-78d3bf6e57f3": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 540,
+                    "y": 90
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "062e3d30-8e06-4415-a357-b05a9ab777b6": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 540,
+                    "y": 210
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "21548e12-7823-4041-bcd8-d1703618a88c": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 540,
+                    "y": 330
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "202c58ba-dfb8-45ac-8d19-8a4ea87d1001": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 540,
+                    "y": 450
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "43f2c9c8-eaaa-4c75-ab6b-e20d7ab46968": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 60,
+                    "y": 570
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "b03484d0-c50f-4a37-a929-bd73dc98f704": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 180,
+                    "y": 570
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "1bc1394d-4608-4df8-81cb-3b6cbdd4c42f": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 300,
+                    "y": 570
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "b99ebaad-d009-42b7-9491-13f7f147842f": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 420,
+                    "y": 570
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "a251e8e3-16af-492e-9286-81b576fb31d2": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 540,
+                    "y": 570
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "03759dec-42f1-4957-ac81-1375bb5aea2d": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 660,
+                    "y": 90
+                },
+                "z": 1,
+                "embeds": [],
+                "isassociatedwith": [
+                    "a251e8e3-16af-492e-9286-81b576fb31d2"
+                ]
+            },
+            "3cbbb341-32fe-486d-993a-779f240433a6": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 660,
+                    "y": 210
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "2af80c22-4e2b-4375-8962-03d9b94d1fd4": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 660,
+                    "y": 330
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "e11c8906-0ecc-4d4a-81da-cee28fd6f3a1": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 660,
+                    "y": 450
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "6ff3b162-41d8-4f56-9171-126b99900c69": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 660,
+                    "y": 570
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "87aacb34-bd90-49e6-aa4a-74217b5c660c": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 60,
+                    "y": 690
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "2fd89fdc-9622-4d1e-b958-4e307d96cde5": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 180,
+                    "y": 690
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "8acb9d30-1d36-4601-bc53-361be05f57f7": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 300,
+                    "y": 690
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "3be4cc0f-1da5-4760-b461-9a4e8b1ce7e6": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 420,
+                    "y": 690
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "c7948406-e9f7-4a89-adfe-fffd3f64274f": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 540,
+                    "y": 690
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "ceab0bef-1191-4815-80ab-3b3ef7e227f7": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 660,
+                    "y": 690
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "fca04947-84db-4c2c-a8dc-4ab37de6111f": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 780,
+                    "y": 90
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "03eac8c0-cc5e-44ec-b230-686988ca4cdf": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 780,
+                    "y": 210
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "a7f14a1c-0f42-4b13-b775-5279c7841fa4": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 780,
+                    "y": 330
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "0b020b4d-5b34-4847-8e70-a25ecda9fa27": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 780,
+                    "y": 450
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "17ac4493-f062-46eb-8124-769f9c5dd526": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 780,
+                    "y": 570
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "28a66f4e-ed18-492d-9d4d-29be3f5e9551": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 780,
+                    "y": 690
+                },
+                "z": 1,
+                "embeds": []
+            },
+            "80e56fb1-5418-4fcf-a4c2-a3bd85ec6ac1": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 60,
+                    "y": 810
+                },
+                "z": 1,
+                "embeds": [],
+                "isassociatedwith": [
+                    "a251e8e3-16af-492e-9286-81b576fb31d2"
+                ]
+            }
+        }
+    }
+}
