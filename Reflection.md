@@ -1,89 +1,31 @@
-# [Team name] Reflection
-
-  
-
-## Instructions
-
-  
-
-1. *Create a new folder within this current folder, and name the new folder
-
- after your team name*
-
-2. *If you prefer keeping this reflection private to your team, you may change
-
- the permissions on your folder so that only your teammates + unit instructors
-
- can view the contents*
-
-3. *Create a copy of this reflection template, and put it in your newly created
-
- folder *
-
-  
-
-*Please answer at least one question from each section below. Answers here will
-
-likely be inspiration for the “lessons learned” section of your project
-
-presentation at the end of the unit.*
-
-  
+# [Celtics Engine] Reflection
 
 ## Design
 
-  
-
-* How closely did you follow your design document after the review was complete?
-
 Did your implementation need to change based on what you learned once you were
-
 underway?
 
-  
+- Our implementation changed once we started looking into solutions for full stack 
+aplications
 
 ## Project
 
-  
+How did you handle the ambiguity of defining your own project and user stories?
 
-* How did you handle the ambiguity of defining your own project and user
-
- stories? What strategies did you use to decide on concrete work to do to
-
- satisfy your requirements?
-
-* How did you deal with getting stuck on a problem? What strategies did you
-
- employ to get yourself unblocked?
-
-* Did any of your commitments you made in your team charter help navigate a
-
- difficult decision, situation, or collaboration challenge? How?
-
-  
+- It took us some serious effort to figure out what was possible to accomplish
+given our original idea, but we quickly adjusted to something more manageable for
+the given time frame
 
 ## Scrum
 
-  
+Did you over or underestimate the work you could complete during your sprints?
+What have you learned that will help you better estimate work next time?
 
-* What did you find to be the most valuable part of daily stand-ups? Is there
-
- anything you would want to do differently at stand-up to make it more useful
-
- to you?
-
-* Did you over or underestimate the work you could complete during your sprints?
-
- What have you learned that will help you better estimate work next time?
-
-  
+- keeping everyone busy with something was challenging. However, I learned a good way 
+to solve this problem is to keep conversations at a high level of abstraction and leave the details up to the team member who is implementing the idea
 
 ## Looking ahead
 
-  
+If you were to start this unit over again, what would you do differently?
 
-* If you were to start this unit over again, what would you do differently? How
-
- do you see yourself applying that to your work in later units, the capstone,
-
- or your internship?
+- Our time managment skills could use some improvement, but otherwise everyone nailed it

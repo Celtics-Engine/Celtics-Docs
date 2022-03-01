@@ -1,9 +1,8 @@
 
 # Problem Statement
-- Celtics Engine is a web application that allows users to create and manage their own custom games.
 
 - The Users of the the game engine will need a way to share asset models they have created with other users.
-- The Celtics Engine Asset Management System will provide the nessesary functionality to allow users to share their assets with other users
+- The Asset Management web application should provide the nessesary functionality to allow users to share their assets with other users
 
 
 # Top Questions to Resolve in Review
@@ -85,6 +84,11 @@ application
 - Linked to S3 for identification of the asset model
 - Linked to cognito for authentication
 - Linked to DynamoDB for data model
+
+### 5. Continues Deployment [AWS]
+- Deployment will be handled by AWS Amplify
+- Amplify push cmd will be used to deploy the application to either production or development
+- Cloudformation will be used to create the necessary resources for the application
 
 
 

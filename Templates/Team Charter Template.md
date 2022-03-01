@@ -1,10 +1,10 @@
 # [team name] Team Charter
 
-	
+  
 
 ## Instructions
 
-	
+  
 
 *Answer the questions below and fill out the process sections with your team’s
 
@@ -12,17 +12,17 @@ mechanisms to follow your answers. Remove the italicized examples text as you
 
 go.*
 
-	
+  
 
 ## Purpose
 
-	
+  
 
 As we learned from the reading, highly performing teams have the following
 
 qualities:
 
-	
+  
 
 * Psychological safety
 
@@ -34,7 +34,7 @@ qualities:
 
 * Impact
 
-	
+  
 
 Your team’s charter captures the ways in which your team will commit to
 
@@ -44,29 +44,29 @@ this charter, but feel free to modify the formatting to best suit your team’s
 
 needs and style.
 
-	
+  
 
 ## Resources to complete your charter
 
-	
+  
 
 These resources may be helpful as you fill out your team charter. They are optional, but may help you develop your charter:
 
-	
+  
 
 * [Discussion Guide to the qualities above](https://docs.google.com/document/d/1lgiz6mwZeyWEaJxN_NMI-tI5Qijv2BHh27DPLeSLE40)
 
 * [Setting SMART goals](https://www.mindtools.com/pages/article/smart-goals.htm)
 
-	
+  
 
 ## Charter
 
-	
+  
 
 ### Administrative Information:
 
-	
+  
 
 |Name            |Preferred Contact Method (Zoom, Slack, email, etc.) |
 
@@ -80,11 +80,11 @@ These resources may be helpful as you fill out your team charter. They are optio
 
 |Team Member (d) |                                              |
 
-	
+  
 
 ### Psychological safety
 
-	
+  
 
 * **How can we take risks on this team without feeling insecure or
 
@@ -98,7 +98,7 @@ These resources may be helpful as you fill out your team charter. They are optio
 
  considered equally, and never judged*
 
-	
+  
 
 * **How do we address situations where any team member feels unsafe?**
 
@@ -110,11 +110,11 @@ These resources may be helpful as you fill out your team charter. They are optio
 
  necessary, escalate to a BloomTech staff member* 
 
-	
+  
 
 ### Dependability, Structure, Clarity
 
-	
+  
 
 * **How can we count on each other to do high quality work on time?**
 
@@ -126,7 +126,7 @@ These resources may be helpful as you fill out your team charter. They are optio
 
  scheduled updates* 
 
-	
+  
 
 * **How do we address missed deadlines?**
 
@@ -134,7 +134,7 @@ These resources may be helpful as you fill out your team charter. They are optio
 
  wrong, identify lessons for future*
 
-	
+  
 
 * **How can we make goals, roles, and execution plans on our team clear?**
 
@@ -146,12 +146,12 @@ These resources may be helpful as you fill out your team charter. They are optio
 
  integration tests, document is reviewed, etc.)*
 
-	
-	
+  
+  
 
 ### Goals
 
-	
+  
 
 * **Overall: What is our overall objective for the Learn & Be Curious unit?**
 
@@ -159,8 +159,8 @@ These resources may be helpful as you fill out your team charter. They are optio
 
  ourselves for internships and full-time SDE roles.”*
 
-	
-	
+  
+  
 
 * **Performance: What do we want to prioritize in terms of what we achieve?**
 
@@ -174,8 +174,8 @@ These resources may be helpful as you fill out your team charter. They are optio
 
  etc.*
 
-	
-	
+  
+  
 
 * **Learning: What are the things that our team wants to learn?**
 
@@ -183,8 +183,8 @@ These resources may be helpful as you fill out your team charter. They are optio
 
  planning, improve testing skills, etc*
 
-	
-	
+  
+  
 
 * **Task processes: What processes will our team follow to meet our goals,
 
@@ -196,18 +196,18 @@ These resources may be helpful as you fill out your team charter. They are optio
 
  lunch and learns)*
 
-	
-	
+  
+  
 
 ## Meaning & Impact
 
-	
+  
 
 **What is personally important for each team member about joining BloomTech? About
 
 becoming an software engineer?**
 
-	
+  
 
 * *Team member name*:
 
@@ -217,7 +217,7 @@ becoming an software engineer?**
 
 * *Team member name*:
 
-	
+  
 
 **What each team member wants to achieve: e.g. improve analytical skills, learn
 
@@ -225,7 +225,7 @@ project management skills, develop public speaking skills, speak up more, speak
 
 up less, etc.**
 
-	
+  
 
 * *Team member name*:
 
@@ -235,11 +235,11 @@ up less, etc.**
 
 * *Team member name*:
 
-	
+  
 
 ## Team Member Roles and Responsibilities
 
-	
+  
 
 *Filling out the following roles and responsibilities is suggested only. Some
 
@@ -249,7 +249,7 @@ one or two people, and others may be rotated. Feel free to create additional
 
 rotating or permanent roles as you go.*
 
-	
+  
 
 |**Role** |**Responsibilities** |**Primary person** |**Secondary person** |
 
@@ -263,15 +263,15 @@ rotating or permanent roles as you go.*
 
 |Rotating Role 3        |                     |                   |                     |
 
-	
+  
 
 ## Acknowledgement
 
-	
+  
 
 **I agree to the terms and conditions of these team agreements:**
 
-	
+  
 
 * Team member (a) Name & Date:
 
