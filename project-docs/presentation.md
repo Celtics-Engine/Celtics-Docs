@@ -3,11 +3,10 @@
 ## Purpose [WR]
 Create a full stack application in which a community of users could easily post, search, view, and upload/download video game asset models
 
+# Entire Project diagram 
+![backend](./design-docs/uml-diagrams/angular/backend.png)
+
 # Frontend Demo 
-**main-page-component-diagram**
-
-![main-page-diagram](./design-docs/uml-diagrams/angular/main-page.png)
-
 
 - login page [W] 
 
@@ -43,7 +42,7 @@ Create a full stack application in which a community of users could easily post,
 
 	- user assets list on profile 
 
-## Backend Demo [WR]
+# Backend Demo [WR]
 
 **auth (aws-congnito)**
 
@@ -59,8 +58,6 @@ Create a full stack application in which a community of users could easily post,
 
 **storage (s3)**
 
-# Entire Project diagram 
-![backend](./design-docs/uml-diagrams/angular/backend.png)
 
 ## New Skills/technologies
 
