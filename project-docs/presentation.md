@@ -1,20 +1,24 @@
 # Celtics Engine Asset Management
+https://github.com/Celtics-Engine/Celtics-Frontend
 
-## Purpose [WR]
-Create a full stack application in which a community of users could easily post, search, view, and upload/download video game asset models
+
+
+## Purpose
+- Create a full stack application in which a community of users could easily post, search, view, and upload/download video game asset models
+
 
 # Entire Project diagram 
 ![backend](./design-docs/uml-diagrams/angular/backend.png)
 
 # Frontend Demo 
 
-- login page [W] 
+- login page
 
 	- register and sign in
 
 	- show nav-bar page states while signed-in and out 
 
-- asset post page [JT]
+- asset post page
 
 	- post an asset
 
@@ -22,9 +26,7 @@ Create a full stack application in which a community of users could easily post,
 
 	- show the asset is now on search page
 
-	- click
-
-- search/explore page [JT]
+- search/explore page
 
 	- search page html (scaling of the images)
 
@@ -32,13 +34,13 @@ Create a full stack application in which a community of users could easily post,
 
 	- click an asset to show the route to details page
 
-- asset details [W]
+- asset details
 
 	- download asset
 
 	- remove asset
 
-- profile page [JT]
+- profile page
 
 	- user assets list on profile 
 
