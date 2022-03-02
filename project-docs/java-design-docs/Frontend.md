@@ -1,4 +1,4 @@
-# Frontenfd Overview
+# Frontend Overview
 
 ## Description
 The frontend will be for a client to interact with the backend and database. If logged in, user profile data will be displayed on the frontend along with interactive buttons that can add or delete information. This frontend is responsive, maintaining a user-friendly visual representation with many screen widths. The main colors of this site reflect trust, professionalism, and adhere to a high level target audience of gamers by offering a sharp and fun looking display. Clients can view and post assets that work with the Celtics Game Engine. 
